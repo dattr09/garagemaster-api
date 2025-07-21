@@ -1,15 +1,12 @@
 package com.garagemaster.garagemaster_api.model;
 
-import lombok.*;
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Document(collection = "invoices")
 public class Invoice {
     @Id
@@ -19,6 +16,7 @@ public class Invoice {
     private String repairOrderId;
     private LocalDateTime checkIn;
     private LocalDateTime checkOut;
-    private String paymentMethod; // "Cash" | "BankTransfer"
+    private String paymentMethod; // Cash | BankTransfer
     private double totalCost;
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
