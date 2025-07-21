@@ -2,6 +2,7 @@ package com.garagemaster.garagemaster_api.controller;
 
 import com.garagemaster.garagemaster_api.model.Parts;
 import com.garagemaster.garagemaster_api.service.PartsService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
