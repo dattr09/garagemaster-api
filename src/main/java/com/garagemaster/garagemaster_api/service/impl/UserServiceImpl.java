@@ -16,6 +16,7 @@ import org.springframework.mail.SimpleMailMessage;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Random;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -37,21 +38,34 @@ public class UserServiceImpl implements UserService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRoles(List.of("Customer")); // default role
+
+        // Sinh mã xác thực email
+        String code = String.format("%06d", new Random().nextInt(999999));
+        user.setEmailConfirmationCode(code);
+        user.setEmailConfirmationCodeExpiry(LocalDateTime.now().plusMinutes(5));
+        user.setEmailConfirmed(false);
+
         userRepository.save(user);
+
+        // Gửi email xác thực
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(request.getEmail());
+        message.setSubject("Xác thực tài khoản GarageMaster");
+        message.setText("Mã xác thực của bạn là: " + code + "\nMã có hiệu lực trong 5 phút.");
+        mailSender.send(message);
     }
 
     @Override
     public String login(UserLoginRequest request) {
-        // DÒNG QUAN TRỌNG NHẤT
+        // Đổi từ getUsername() sang getEmail()
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
-                request.getUsername(),
+                request.getEmail(),
                 request.getPassword()
             )
         );
 
-        // Nếu không bị lỗi, tức là xác thực thành công → tạo JWT
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new RuntimeException("User not found"));
 
         return jwtUtil.generateToken(user.getUsername(), user.getRoles());
@@ -71,7 +85,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean verifyResetCode(String email, String code) {
-        return code.equals(resetCodes.get(email));
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) return false;
+        if (user.isEmailConfirmed()) return true;
+        if (user.getEmailConfirmationCode() == null || user.getEmailConfirmationCodeExpiry() == null) return false;
+        if (!code.equals(user.getEmailConfirmationCode())) return false;
+        if (user.getEmailConfirmationCodeExpiry().isBefore(LocalDateTime.now())) return false;
+
+        user.setEmailConfirmed(true);
+        user.setEmailConfirmationCode(null);
+        user.setEmailConfirmationCodeExpiry(null);
+        userRepository.save(user);
+        return true;
     }
 
     @Override
