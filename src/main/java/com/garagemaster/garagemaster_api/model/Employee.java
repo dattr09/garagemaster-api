@@ -15,6 +15,6 @@ public class Employee {
     private String name;
     private String phone;
     private String address;
-    private String employeeRole; // Admin, Manager, Accountant, Mechanic, Employee
+    private EmployeeRole employeeRole = EmployeeRole.Employee;
     private LocalDateTime dateJoined = LocalDateTime.now();
 }

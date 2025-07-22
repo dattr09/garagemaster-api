@@ -29,7 +29,14 @@ public class SecurityConfig {
                     .requestMatchers(
                         "/api/auth/**",
                         "/swagger-ui/**",
-                        "/v3/api-docs/**"
+                        "/v3/api-docs/**",
+                        "/api/brands/**",
+                        "/api/parts/**",
+                        "/api/customers/**",
+                        "/api/motos/**",
+                        "/api/employees/**",
+                        "/api/repairorders/**",
+                        "/api/invoices/**"
                     ).permitAll()
                     .anyRequest().authenticated()
                 )
