@@ -30,12 +30,18 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public Brand update(String id, Brand brand) {
-        brand.setId(id);
-        return brandRepository.save(brand);
+        Brand existingBrand = brandRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Brand not found"));
+        existingBrand.setName(brand.getName());
+        existingBrand.setImage(brand.getImage());
+        return brandRepository.save(existingBrand);
     }
 
     @Override
     public void delete(String id) {
+        if (!brandRepository.existsById(id)) {
+            throw new RuntimeException("Brand not found");
+        }
         brandRepository.deleteById(id);
     }
 }
